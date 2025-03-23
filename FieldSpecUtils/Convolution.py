@@ -383,3 +383,79 @@ def GeoEYE(spectra, Bands):
     os.chdir(Home_Dir)
     collated_convolved.to_csv('GeoEYE_Convolved.csv')
 
+def WV3(spectra, Bands):
+    """Maxar WorldView-3 convolution""" 
+    cwd = Path.cwd()
+    Home_Dir = cwd
+    bands_Dir = str(cwd / "bands") 
+    convolved_Dir = str(cwd / "convolved")
+    if (Path(bands_Dir)).exists() and (Path(bands_Dir)).is_dir():
+        shutil.rmtree(Path(bands_Dir))
+        os.mkdir(bands_Dir)
+    else:
+        os.mkdir(bands_Dir)
+    if (Path(convolved_Dir)).exists() and (Path(convolved_Dir)).is_dir():
+        shutil.rmtree(Path(convolved_Dir))
+        os.mkdir(convolved_Dir)
+    else:
+        os.mkdir(convolved_Dir)
+        
+    while True:
+        water_bands_removed = input("Are there regions where water bands have been removed in your data (Y or N)?: ")
+        if water_bands_removed == "Y":
+            np.seterr(divide="ignore")
+            break
+        elif water_bands_removed == "N":
+            break
+        else:
+            print("Input a valid option (Y or N)")
+            continue
+    
+    os.chdir(bands_Dir)
+    for column in spectra:
+        f = Bands.mul(spectra[column],axis = 0)
+        f.to_csv('Bands_' + column + '.csv')
+
+        
+    for band_file in os.scandir(bands_Dir):
+        file_name = Path(band_file).stem
+        convolution_process = pd.read_csv(band_file, index_col=0, header=0)
+        CoastalBlue = (np.trapezoid((convolution_process.iloc[0:760, 0]), axis = 0)) / (np.trapezoid((Bands.iloc[0:760, 0]), axis = 0))
+        Blue = (np.trapezoid((convolution_process.iloc[0:760, 1]), axis = 0)) / (np.trapezoid((Bands.iloc[0:760, 1]), axis = 0))
+        Green = (np.trapezoid((convolution_process.iloc[0:760, 2]), axis = 0)) / (np.trapezoid((Bands.iloc[0:760, 2]), axis = 0))
+        Yellow = (np.trapezoid((convolution_process.iloc[0:760, 3]), axis = 0)) / (np.trapezoid((Bands.iloc[0:760, 3]), axis = 0))
+        Red = (np.trapezoid((convolution_process.iloc[0:760, 4]), axis = 0)) / (np.trapezoid((Bands.iloc[0:760, 4]), axis = 0))
+        RedEdge = (np.trapezoid((convolution_process.iloc[0:760, 5]), axis = 0)) / (np.trapezoid((Bands.iloc[0:760, 5]), axis = 0))
+        NIRI = (np.trapezoid((convolution_process.iloc[0:760, 6]), axis = 0)) / (np.trapezoid((Bands.iloc[0:760, 6]), axis = 0))
+        NIRII = (np.trapezoid((convolution_process.iloc[0:760, 7]), axis = 0)) / (np.trapezoid((Bands.iloc[0:760, 7]), axis = 0))
+        SWIRI = (np.trapezoid((convolution_process.iloc[792:1293, 8]), axis = 0)) / (np.trapezoid((Bands.iloc[792:1293, 8]), axis = 0))
+        SWIRII = (np.trapezoid((convolution_process.iloc[1139:1291, 9]), axis = 0)) / (np.trapezoid((Bands.iloc[1139:1291, 9]), axis = 0))        
+        SWIRIII = (np.trapezoid((convolution_process.iloc[1270:1350, 10]), axis = 0)) / (np.trapezoid((Bands.iloc[1270:1350, 10]), axis = 0))        
+        SWIRIV = (np.trapezoid((convolution_process.iloc[1330:1445, 11]), axis = 0)) / (np.trapezoid((Bands.iloc[1330:1445, 11]), axis = 0))        
+        SWIRV = (np.trapezoid((convolution_process.iloc[1760:1870, 12]), axis = 0)) / (np.trapezoid((Bands.iloc[1760:1870, 12]), axis = 0))        
+        SWIRVI = (np.trapezoid((convolution_process.iloc[1800:1920, 13]), axis = 0)) / (np.trapezoid((Bands.iloc[1800:1920, 13]), axis = 0))        
+        SWIRVII = (np.trapezoid((convolution_process.iloc[1855:1970, 14]), axis = 0)) / (np.trapezoid((Bands.iloc[1855:1970, 14]), axis = 0))        
+        SWIRVIII = (np.trapezoid((convolution_process.iloc[1900:2045, 15]), axis = 0)) / (np.trapezoid((Bands.iloc[1900:2045, 15]), axis = 0))
+        convolved = {'Band name': ["Coastal Blue 427.38 nm ", "Blue 481.92 nm", "Green 547.14 nm",
+                                   "Yellow 604.23 nm", "Red 660.11 nm", "RedEdge 722.73 nm", "NIR-I 824.04 nm", "NIR-II 913.65 nm",
+                                   "SWIR-I 1209.06 nm", "SWIR-II 1571.61 nm", "SWIR-III 1661.10 nm", "SWIR-IV 1729.54 nm",
+                                   "SWIR-V 2163.69 nm", "SWIR-VI 2202.16 nm", "SWIR-VII 2259.32 nm", "SWIR-VIII 2329.22 nm", ],
+                         file_name+'SRF': [CoastalBlue, Blue, Green, Yellow, Red, RedEdge, NIRI, NIRII,
+                                           SWIRI, SWIRII, SWIRIII, SWIRIV, SWIRV, SWIRVI, SWIRVII, SWIRVIII]}
+        convolved_product = pd.DataFrame(convolved)
+        convolved_product.set_index('Band name', inplace = True)
+        os.chdir(convolved_Dir)
+        convolved_product.to_csv('convolved_' + file_name + '.csv') 
+    
+    collated_list = []
+    for convolved_file in os.scandir(convolved_Dir):
+        df = pd.read_csv(convolved_file, index_col=0, header=0)
+        collated_list.append(df)
+
+    collated_convolved = pd.concat(collated_list, axis=1)
+
+    os.chdir(Home_Dir)
+    collated_convolved.to_csv('WorldView3_Convolved.csv')
+    
+    shutil.rmtree(bands_Dir)
+    shutil.rmtree(convolved_Dir)
