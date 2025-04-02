@@ -5,7 +5,7 @@ setup(
         name                  = "FieldSpecUtils",
         packages              = find_packages(),
         install_requires      = reqs,
-        version               = "1.0.4",
+        version               = "1.0.5",
         author                = "NERC Field Spectroscopy Facility",
         author_email          = "fsf@ed.ac.uk",
         description           = ("A software package forconducting calculations of various remote sensing indices from hyperspectral data, and convolution processes to transform hyperspectral data to various satellite platform outputs. "),
