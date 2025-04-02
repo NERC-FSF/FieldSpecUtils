@@ -454,8 +454,138 @@ def WV3(spectra, Bands):
 
     collated_convolved = pd.concat(collated_list, axis=1)
 
+def Legion1(spectra, Bands):
+    """Maxar Legion (Sensor 1) convolution""" 
+    cwd = Path.cwd()
+    Home_Dir = cwd
+    bands_Dir = str(cwd / "bands") 
+    convolved_Dir = str(cwd / "convolved")
+    if (Path(bands_Dir)).exists() and (Path(bands_Dir)).is_dir():
+        shutil.rmtree(Path(bands_Dir))
+        os.mkdir(bands_Dir)
+    else:
+        os.mkdir(bands_Dir)
+    if (Path(convolved_Dir)).exists() and (Path(convolved_Dir)).is_dir():
+        shutil.rmtree(Path(convolved_Dir))
+        os.mkdir(convolved_Dir)
+    else:
+        os.mkdir(convolved_Dir)
+        
+    while True:
+        water_bands_removed = input("Are there regions where water bands have been removed in your data (Y or N)?: ")
+        if water_bands_removed == "Y":
+            np.seterr(divide="ignore")
+            break
+        elif water_bands_removed == "N":
+            break
+        else:
+            print("Input a valid option (Y or N)")
+            continue
+    
+    os.chdir(bands_Dir)
+    for column in spectra:
+        f = Bands.mul(spectra[column],axis = 0)
+        f.to_csv('Bands_' + column + '.csv')
+
+        
+    for band_file in os.scandir(bands_Dir):
+        file_name = Path(band_file).stem
+        convolution_process = pd.read_csv(band_file, index_col=0, header=0)
+        CoastalBlue = (np.trapezoid((convolution_process.iloc[39:150, 0]), axis = 0)) / (np.trapezoid((Bands.iloc[39:150, 0]), axis = 0))
+        Blue = (np.trapezoid((convolution_process.iloc[39:559, 1]), axis = 0)) / (np.trapezoid((Bands.iloc[39:559, 1]), axis = 0))
+        Green = (np.trapezoid((convolution_process.iloc[39:559, 2]), axis = 0)) / (np.trapezoid((Bands.iloc[39:559, 2]), axis = 0))
+        Pan = (np.trapezoid((convolution_process.iloc[49:500, 3]), axis = 0)) / (np.trapezoid((Bands.iloc[49:500, 3]), axis = 0))
+        Yellow = (np.trapezoid((convolution_process.iloc[199:350, 4]), axis = 0)) / (np.trapezoid((Bands.iloc[199:350, 4]), axis = 0))        
+        Red = (np.trapezoid((convolution_process.iloc[249:400, 5]), axis = 0)) / (np.trapezoid((Bands.iloc[249:400, 5]), axis = 0))        
+        RedEdgeI = (np.trapezoid((convolution_process.iloc[299:400, 6]), axis = 0)) / (np.trapezoid((Bands.iloc[299:400, 6]), axis = 0))
+        RedEdgeII = (np.trapezoid((convolution_process.iloc[349:450, 7]), axis = 0)) / (np.trapezoid((Bands.iloc[349:450, 7]), axis = 0))        
+        NIRI = (np.trapezoid((convolution_process.iloc[349:559, 8]), axis = 0)) / (np.trapezoid((Bands.iloc[349:559, 8]), axis = 0))
+        convolved = {'Band name': ["Coastal Blue 425.18 nm ", "Blue 481.26 nm", "Green 546.50 nm",
+                                   "Panchromatic 630.14 nm", "Yellow 604.17 nm", "Red 660.69 nm",
+                                   "RedEdgeI 703.98 nm", "RedEdgeII 737.34 nm", "NIRI 831.57 nm" ],
+                         file_name+'SRF': [CoastalBlue, Blue, Green, Pan, Yellow, Red, RedEdgeI, RedEdgeII, NIRI]}
+        convolved_product = pd.DataFrame(convolved)
+        convolved_product.set_index('Band name', inplace = True)
+        os.chdir(convolved_Dir)
+        convolved_product.to_csv('convolved_' + file_name + '.csv') 
+    
+    collated_list = []
+    for convolved_file in os.scandir(convolved_Dir):
+        df = pd.read_csv(convolved_file, index_col=0, header=0)
+        collated_list.append(df)
+
+    collated_convolved = pd.concat(collated_list, axis=1)
+
     os.chdir(Home_Dir)
-    collated_convolved.to_csv('WorldView3_Convolved.csv')
+    collated_convolved.to_csv('MaxarLegionI_Convolved.csv')
+    
+    shutil.rmtree(bands_Dir)
+    shutil.rmtree(convolved_Dir)
+
+def Legion2(spectra, Bands):
+    """Maxar Legion (Sensor 2) convolution""" 
+    cwd = Path.cwd()
+    Home_Dir = cwd
+    bands_Dir = str(cwd / "bands") 
+    convolved_Dir = str(cwd / "convolved")
+    if (Path(bands_Dir)).exists() and (Path(bands_Dir)).is_dir():
+        shutil.rmtree(Path(bands_Dir))
+        os.mkdir(bands_Dir)
+    else:
+        os.mkdir(bands_Dir)
+    if (Path(convolved_Dir)).exists() and (Path(convolved_Dir)).is_dir():
+        shutil.rmtree(Path(convolved_Dir))
+        os.mkdir(convolved_Dir)
+    else:
+        os.mkdir(convolved_Dir)
+        
+    while True:
+        water_bands_removed = input("Are there regions where water bands have been removed in your data (Y or N)?: ")
+        if water_bands_removed == "Y":
+            np.seterr(divide="ignore")
+            break
+        elif water_bands_removed == "N":
+            break
+        else:
+            print("Input a valid option (Y or N)")
+            continue
+    
+    os.chdir(bands_Dir)
+    for column in spectra:
+        f = Bands.mul(spectra[column],axis = 0)
+        f.to_csv('Bands_' + column + '.csv')
+
+        
+    for band_file in os.scandir(bands_Dir):
+        file_name = Path(band_file).stem
+        convolution_process = pd.read_csv(band_file, index_col=0, header=0)
+        CoastalBlue = (np.trapezoid((convolution_process.iloc[43:105, 0]), axis = 0)) / (np.trapezoid((Bands.iloc[43:105, 0]), axis = 0))
+        Blue = (np.trapezoid((convolution_process.iloc[94:169, 1]), axis = 0)) / (np.trapezoid((Bands.iloc[94:169, 1]), axis = 0))        
+        Green = (np.trapezoid((convolution_process.iloc[143:243, 2]), axis = 0)) / (np.trapezoid((Bands.iloc[143:243, 2]), axis = 0))        
+        Pan = (np.trapezoid((convolution_process.iloc[91:475, 3]), axis = 0)) / (np.trapezoid((Bands.iloc[91:475, 3]), axis = 0))        
+        Yellow = (np.trapezoid((convolution_process.iloc[214:308, 4]), axis = 0)) / (np.trapezoid((Bands.iloc[214:308, 4]), axis = 0))        
+        Red = (np.trapezoid((convolution_process.iloc[265:368, 5]), axis = 0)) / (np.trapezoid((Bands.iloc[265:368, 5]), axis = 0))        
+        RedEdgeI = (np.trapezoid((convolution_process.iloc[338:372, 6]), axis = 0)) / (np.trapezoid((Bands.iloc[338:372, 6]), axis = 0))        
+        RedEdgeII = (np.trapezoid((convolution_process.iloc[350:429, 7]), axis = 0)) / (np.trapezoid((Bands.iloc[350:429, 7]), axis = 0))        
+        NIRI = (np.trapezoid((convolution_process.iloc[405:558, 8]), axis = 0)) / (np.trapezoid((Bands.iloc[349:558, 8]), axis = 0))        
+        convolved = {'Band name': ["Coastal Blue 425.54 nm ", "Blue 480.89 nm", "Green 546.15 nm",
+                                   "Panchromatic 628.90 nm", "Yellow 605.22 nm", "Red 660.53 nm",
+                                   "RedEdgeI 704.68 nm", "RedEdgeII 739.76 nm", "NIRI 830.50 nm" ],
+                         file_name+'SRF': [CoastalBlue, Blue, Green, Pan, Yellow, Red, RedEdgeI, RedEdgeII, NIRI]}
+        convolved_product = pd.DataFrame(convolved)
+        convolved_product.set_index('Band name', inplace = True)
+        os.chdir(convolved_Dir)
+        convolved_product.to_csv('convolved_' + file_name + '.csv') 
+    
+    collated_list = []
+    for convolved_file in os.scandir(convolved_Dir):
+        df = pd.read_csv(convolved_file, index_col=0, header=0)
+        collated_list.append(df)
+
+    collated_convolved = pd.concat(collated_list, axis=1)
+
+    os.chdir(Home_Dir)
+    collated_convolved.to_csv('MaxarLegionII_Convolved.csv')
     
     shutil.rmtree(bands_Dir)
     shutil.rmtree(convolved_Dir)
