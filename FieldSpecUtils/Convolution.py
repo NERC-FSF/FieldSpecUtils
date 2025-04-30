@@ -42,6 +42,7 @@ def S2(spectra, Bands):
     for band_file in os.scandir(bands_Dir):
         file_name = Path(band_file).stem
         convolution_process = pd.read_csv(band_file, index_col=0, header=0)
+        Band_1 = (np.trapezoid((convolution_process.iloc[62:107,0]), axis = 0)) / (np.trapezoid((Bands.iloc[62:107,0]), axis = 0))
         Band_2 = (np.trapezoid((convolution_process.iloc[89:184, 1]), axis = 0)) / (np.trapezoid((Bands.iloc[89:184, 1]), axis = 0))
         Band_3 = (np.trapezoid((convolution_process.iloc[188:233, 2]), axis = 0)) / (np.trapezoid((Bands.iloc[188:233, 2])))
         Band_4 = (np.trapezoid((convolution_process.iloc[296:344, 3]), axis = 0)) / (np.trapezoid((Bands.iloc[296:344, 3]), axis = 0))
@@ -50,12 +51,17 @@ def S2(spectra, Bands):
         Band_7 = (np.trapezoid((convolution_process.iloc[419:447, 6]), axis = 0)) / (np.trapezoid((Bands.iloc[419:447, 6]), axis = 0))
         Band_8 = (np.trapezoid((convolution_process.iloc[423:557, 7]), axis = 0)) / (np.trapezoid((Bands.iloc[423:557, 7]), axis = 0))
         Band_8a = (np.trapezoid((convolution_process.iloc[497:531, 8]), axis = 0)) / (np.trapezoid((Bands.iloc[497:531, 8]), axis = 0))
+        Band_9 = (np.trapezoid((convolution_process.iloc[582:609,9]), axis = 0)) / (np.trapezoid((Bands.iloc[582:609,9]), axis = 0))
+        Band_10 = (np.trapezoid((convolution_process.iloc[987:1063,10]), axis = 0)) / (np.trapezoid((Bands.iloc[987:1063,10]), axis = 0))
         Band_11 = (np.trapezoid((convolution_process.iloc[1189:1332, 11]), axis = 0)) / (np.trapezoid((Bands.iloc[1189:1332, 11]), axis = 0))
         Band_12 = (np.trapezoid((convolution_process.iloc[1728:1970, 12]), axis = 0)) / (np.trapezoid((Bands.iloc[1728:1970, 12]), axis = 0))
-        convolved = {'Band name and centre wavelength (nm)': ["Band 2 - 490", "Band 3 - 560", "Band 4 - 665", "Band 5 - 705",
-                                   "Band 6 - 740","Band 7 - 783", "Band 8 - 842", "Band 8a - 865",
-                                   "Band 11 - 1610", "Band 12 - 2190"],
-                         file_name+'SRF': [Band_2, Band_3, Band_4, Band_5, Band_6, Band_7, Band_8, Band_8a, Band_11, Band_12]}
+        convolved = {'Band name and centre wavelength (nm)': ["Band 1 Coastal aerosol - 443 nm", "Band 2 Blue - 490 nm", "Band 3 Green - 560 nm",
+                                                              "Band 4 Red - 665 nm", "Band 5 Vegetation Red Edge I - 705 nm",
+                                                              "Band 6 Vegetation Red Edge II - 740 nm","Band 7 Vegetation Red Edge III - 783 nm",
+                                                              "Band 8 NIR - 842 nm", "Band 8a Vegetation Red Edge IV - 865 nm",
+                                                              "Band 9 Water Vapour - 945 nm", "Band 10 SWIR Cirrius - 1375 nm",
+                                                              "Band 11 SWIR I - 1610 nm", "Band 12 SWIR II - 2190 nm"],
+                         file_name+'SRF': [Band_1, Band_2, Band_3, Band_4, Band_5, Band_6, Band_7, Band_8, Band_8a, Band_9, Band_10, Band_11, Band_12]}
         convolved_product = pd.DataFrame(convolved)
         convolved_product.set_index('Band name and centre wavelength (nm)', inplace = True)
         os.chdir(convolved_Dir)
@@ -69,10 +75,11 @@ def S2(spectra, Bands):
     collated_convolved = pd.concat(collated_list, axis=1)
 
     os.chdir(Home_Dir)
-    collated_convolved.to_csv('Plots_with_convolved_bands.csv')
+    collated_convolved.to_csv('Sentinel2MSI_Convolved.csv')
     
     shutil.rmtree(bands_Dir)
     shutil.rmtree(convolved_Dir)
+
     
 def WV2(spectra, Bands):
     """WorldView-2 convolution, minus panchromatic""" 
